@@ -1,36 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chat Social
 
-## Getting Started
+Rede social com feed de posts, mensagens diretas e grupos com chat em tempo real.
 
-First, run the development server:
+Construída com **Next.js 16**, **Supabase** e **TypeScript**, seguindo o padrão arquitetural **MVVM** adaptado para React.
+
+---
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| Backend / Banco | Supabase (PostgreSQL + Auth + Storage + Realtime) |
+| Linguagem | TypeScript 5 |
+| Estilização | Tailwind CSS 4 |
+| Componentes UI | shadcn/ui + Radix UI |
+| Ícones | Lucide React |
+
+---
+
+## Pré-requisitos
+
+- Node.js 18+
+- Uma conta no [Supabase](https://supabase.com) com projeto criado
+
+---
+
+## Instalação
 
 ```bash
+# 1. Clone o repositório
+git clone git@github.com:ludslvaz/chat-social.git
+cd chat-social
+
+# 2. Instale as dependências
+npm install
+
+# 3. Configure as variáveis de ambiente
+cp .env.example .env.local
+# Edite .env.local com suas chaves do Supabase
+
+# 4. Rode o servidor de desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Variáveis de Ambiente
 
-## Learn More
+Crie um arquivo `.env.local` na raiz do projeto com:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+NEXT_PUBLIC_SUPABASE_URL=sua_url_aqui
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anon_aqui
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> **Nunca versione o `.env.local`.** Use `.env.example` (sem valores) como referência para outros devs.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Comando | Descrição |
+|---|---|
+| `npm run dev` | Servidor de desenvolvimento com Turbopack |
+| `npm run build` | Build de produção |
+| `npm start` | Inicia o servidor de produção |
+| `npm run lint` | Lint com ESLint |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Funcionalidades
+
+- **Feed** — criação, curtida e exclusão de posts em tempo real
+- **Mensagens Diretas** — chat 1:1 com atualização automática via Supabase Realtime
+- **Grupos** — criação de grupos, ingresso/saída e chat coletivo em tempo real
+- **Perfil** — edição de nome, bio e avatar (upload para Supabase Storage)
+- **Autenticação** — registro e login com e-mail/senha via Supabase Auth
+
+---
+
+## Arquitetura
+
+O projeto segue o padrão **MVVM**:
+
+```
+View        →  _components/     (UI pura, sem lógica)
+ViewModel   →  hooks/           (estado + lógica de cada página)
+Model       →  lib/types.ts     (contratos de dados)
+             + lib/services/    (acesso ao Supabase)
+```
+
+Cada página tem um hook dedicado (ex: `useFeedPage`, `useGroupChatPage`) que encapsula todo o estado e os efeitos colaterais. Os componentes recebem dados e callbacks via props e não conhecem o Supabase diretamente.
+
+Consulte [`ARCHITECTURE.md`](./ARCHITECTURE.md) para a documentação completa da arquitetura, fluxo de dados, autenticação, Realtime e loading.
+
+---
+
+## Estrutura de Pastas (resumo)
+
+```
+chat-social/
+├── middleware.ts              # Proteção de rotas (redireciona para /auth/login)
+└── app/
+    ├── not-found.tsx          # Página 404 global
+    ├── (app)/                 # Rotas protegidas (feed, grupos, mensagens, perfil)
+    ├── auth/                  # Rotas públicas (login, registro)
+    ├── context/               # AppProvider — supabase, user, profile globais
+    ├── hooks/                 # ViewModels — um hook por página
+    ├── _components/           # Componentes de UI organizados por domínio
+    │   └── ui/skeletons.tsx   # Skeletons de carregamento por tela
+    └── lib/
+        ├── types.ts           # Tipos centrais de domínio
+        ├── supabase/          # Clientes browser e server
+        └── services/          # Acesso ao banco de dados
+```
